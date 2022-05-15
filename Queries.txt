@@ -1,0 +1,72 @@
+/* Query 1 */
+WITH t1 AS
+  (SELECT c.Country AS country,
+          g.Name AS genre,
+          sum(i.Quantity) AS num_of_purchases
+   FROM Genre g
+   JOIN Track t ON g.GenreId = t.GenreId
+   JOIN InvoiceLine i ON t.TrackId = i.TrackId
+   JOIN Invoice n ON i.InvoiceId = n.InvoiceId
+   JOIN Customer c ON n.CustomerId = c.CustomerId
+   GROUP BY 1,
+            2),
+     t2 AS
+  (SELECT Country,
+          max(num_of_purchases) AS num_of_purchases
+   FROM t1
+   GROUP BY 1)
+SELECT t1.country,
+       t1.genre,
+       t2.num_of_purchases
+FROM t1
+JOIN t2 ON t1.num_of_purchases = t2.num_of_purchases
+AND t1.country = t2.country;
+
+
+/* Query 2 */
+WITH t1 AS
+  (SELECT c.Country country,
+          (c.FirstName || ' ' || c.LastName) customer_name,
+          sum(i.total) total_amt
+   FROM Customer c
+   JOIN Invoice i ON c.CustomerId = i.CustomerId
+   GROUP BY 1,
+            2),
+     t2 AS
+  (SELECT Country,
+          max(total_amt) total_amt
+   FROM t1
+   GROUP BY 1)
+SELECT t1.Country,
+       t1.customer_name,
+       t2.total_amt
+FROM t1
+JOIN t2 ON t1.country = t2.country
+AND t1.total_amt = t2.total_amt;
+
+
+
+/* Query 3 */
+WITH t1 AS
+  (SELECT *
+   FROM Genre g
+   JOIN Track t ON g.GenreId = t.GenreId
+   WHERE g.Name = 'Rock')
+SELECT a.Name artist,
+       count(*) number_of_tracks
+FROM Artist a
+JOIN Album l ON a.ArtistId = l.ArtistId
+JOIN t1 ON l.AlbumId = t1.AlbumId
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 10;
+
+
+/* Query 4 */
+SELECT c.City,
+       sum(i.total) total
+FROM Customer c
+JOIN Invoice i ON c.CustomerId = i.CustomerId
+GROUP BY 1
+ORDER  BY 2 DESC
+LIMIT 10;
